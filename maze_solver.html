@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Generator and Solver</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="position: absolute; top: 10px; color: white; font-size: 30px; font-family: Arial, sans-serif;">real time maze solver (slowed down for viewing)</h1>
+    <canvas id="mazeCanvas" width="600" height="600"></canvas>
+    <div id="timer" style="position: absolute; top: 10px; color: white; font-size: 20px; font-family: Arial, sans-serif;">
+        Time: 0.000s
+    </div>
+    <script>
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        const timerElement = document.getElementById('timer');
+
+        const mazeSize = 100; 
+        const cellSize = canvas.width / mazeSize;
+
+        let maze = [];
+        let stack = [];
+        let solutionPath = [];
+        let solvingQueue = [];
+        let solvingInterval;
+        let startTime; 
+
+        const directions = [
+            { dx: 0, dy: -1 }, 
+            { dx: 1, dy: 0 },  
+            { dx: 0, dy: 1 },  
+            { dx: -1, dy: 0 }  
+        ];
+
+        function initializeMaze() {
+            maze = Array.from({ length: mazeSize }, () =>
+                Array.from({ length: mazeSize }, () => ({
+                    visited: false,
+                    walls: [true, true, true, true] 
+                }))
+            );
+        }
+
+        function drawMaze() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < mazeSize; y++) {
+                for (let x = 0; x < mazeSize; x++) {
+                    const cell = maze[y][x];
+                    const xPos = x * cellSize;
+                    const yPos = y * cellSize;
+
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1;
+
+                    if (cell.walls[0]) ctx.strokeRect(xPos, yPos, cellSize, 1); 
+                    if (cell.walls[1]) ctx.strokeRect(xPos + cellSize, yPos, 1, cellSize); 
+                    if (cell.walls[2]) ctx.strokeRect(xPos, yPos + cellSize, cellSize, 1); 
+                    if (cell.walls[3]) ctx.strokeRect(xPos, yPos, 1, cellSize); 
+                }
+            }
+        }
+
+        function generateMaze() {
+            const startX = 0;
+            const startY = 0;
+            stack.push({ x: startX, y: startY });
+            maze[startY][startX].visited = true;
+
+            while (stack.length > 0) {
+                const current = stack[stack.length - 1];
+                const { x, y } = current;
+
+                const neighbors = [];
+                directions.forEach((dir, index) => {
+                    const nx = x + dir.dx;
+                    const ny = y + dir.dy;
+                    if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && !maze[ny][nx].visited) {
+                        neighbors.push({ x: nx, y: ny, direction: index });
+                    }
+                });
+
+                if (neighbors.length > 0) {
+
+                    const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    const { x: nx, y: ny, direction } = next;
+
+                    maze[y][x].walls[direction] = false;
+                    maze[ny][nx].walls[(direction + 2) % 4] = false;
+
+                    maze[ny][nx].visited = true;
+                    stack.push({ x: nx, y: ny });
+                } else {
+
+                    stack.pop();
+                }
+            }
+        }
+
+        function solveMazeRealTime() {
+            solvingQueue = [{ x: 0, y: 0, path: [] }];
+            const visited = Array.from({ length: mazeSize }, () =>
+                Array.from({ length: mazeSize }, () => false)
+            );
+
+            startTime = performance.now(); 
+
+            solvingInterval = setInterval(() => {
+                if (solvingQueue.length === 0) {
+                    clearInterval(solvingInterval);
+                    drawSolution();
+                    return;
+                }
+
+                const current = solvingQueue.shift();
+                const { x, y, path } = current;
+
+                visited[y][x] = true;
+
+                const newPath = [...path, { x, y }];
+
+                if (x === mazeSize - 1 && y === mazeSize - 1) {
+                    solutionPath = newPath;
+                    clearInterval(solvingInterval);
+                    drawSolution();
+
+                    const endTime = performance.now();
+                    const timeTaken = ((endTime - startTime) / 1000).toFixed(3);
+                    timerElement.textContent = `Time: ${timeTaken}s`;
+
+                    setTimeout(() => {
+                        main(); 
+                    }, 3000);
+                    return;
+                }
+
+                directions.forEach((dir, index) => {
+                    const nx = x + dir.dx;
+                    const ny = y + dir.dy;
+                    if (
+                        nx >= 0 &&
+                        ny >= 0 &&
+                        nx < mazeSize &&
+                        ny < mazeSize &&
+                        !visited[ny][nx] &&
+                        !maze[y][x].walls[index]
+                    ) {
+                        solvingQueue.push({ x: nx, y: ny, path: newPath });
+                    }
+                });
+
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+            }, 1 / 3); 
+        }
+
+        function drawSolution() {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 2;
+
+            ctx.beginPath();
+            solutionPath.forEach((cell, index) => {
+                const xPos = cell.x * cellSize + cellSize / 2;
+                const yPos = cell.y * cellSize + cellSize / 2;
+                if (index === 0) {
+                    ctx.moveTo(xPos, yPos);
+                } else {
+                    ctx.lineTo(xPos, yPos);
+                }
+            });
+            ctx.stroke();
+        }
+
+        function main() {
+            initializeMaze();
+            generateMaze();
+            drawMaze();
+            solveMazeRealTime();
+        }
+
+        main();
+    </script>
+</body>
+</html>
