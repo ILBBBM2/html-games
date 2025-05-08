@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three-Body Simulation</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+        }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>multi body not problem interactive lol</h1>
+    <p>click and drag the middle ball to move it. press 'Z' to spawn a new ball.</p>
+    <canvas id="simulationCanvas" width="800" height="600"></canvas>
+    <script>
+        const G = 1.5; 
+    const MIN_DISTANCE = 20; 
+    const MAX_VELOCITY = 15; 
+
+    class Body {
+        constructor(x, y, mass, vx = 0, vy = 0) {
+            this.x = x;
+            this.y = y;
+            this.mass = mass;
+            this.vx = vx;
+            this.vy = vy;
+        }
+
+        updatePosition(dt) {
+            this.x += this.vx * dt;
+            this.y += this.vy * dt;
+        }
+
+        applyForce(fx, fy, dt) {
+            this.vx += (fx / this.mass) * dt;
+            this.vy += (fy / this.mass) * dt;
+
+            const speed = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+            if (speed > MAX_VELOCITY) {
+                const scale = MAX_VELOCITY / speed;
+                this.vx *= scale;
+                this.vy *= scale;
+            }
+        }
+    }
+
+    function calculateForce(body1, body2) {
+        const dx = body2.x - body1.x;
+        const dy = body2.y - body1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        const effectiveDistance = Math.max(distance, MIN_DISTANCE);
+        const force = (G * body1.mass * body2.mass) / (effectiveDistance * effectiveDistance);
+        const fx = (force * dx) / effectiveDistance;
+        const fy = (force * dy) / effectiveDistance;
+        return { fx, fy };
+    }
+
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const bodies = [
+        new Body(400, 300, 1000, 0, 0),  
+        new Body(500, 300, 10, 0, 2),    
+        new Body(300, 250, 10, 10, -2),
+        new Body(300, 350, 10, 0, -2),
+        new Body(300, 300, 10, 0, -2)    
+    ];
+    let mouseX = 0; 
+    let mouseY = 0; 
+
+    canvas.addEventListener('mousemove', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = event.clientX - rect.left;
+        mouseY = event.clientY - rect.top;
+
+        if (isDragging) {
+
+            const middleBall = bodies[middleBallIndex];
+            middleBall.x = mouseX;
+            middleBall.y = mouseY;
+
+            middleBall.vx = 0;
+            middleBall.vy = 0;
+        }
+    });
+
+    canvas.addEventListener('keydown', (event) => {
+        if (event.key === 'z') {
+
+            const newBall = new Body(mouseX, mouseY, 10, Math.random() * 4 - 2, Math.random() * 4 - 2);
+            bodies.push(newBall);
+        }
+    });
+
+    canvas.setAttribute('tabindex', '0');
+    canvas.style.outline = 'none';
+    canvas.focus();
+
+    let isDragging = false; 
+    const middleBallIndex = 0; 
+
+    canvas.addEventListener('mousedown', (event) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        const middleBall = bodies[middleBallIndex];
+        const distance = Math.sqrt(
+            (mouseX - middleBall.x) ** 2 + (mouseY - middleBall.y) ** 2
+        );
+
+        if (distance <= 10) {
+            isDragging = true;
+        }
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const middleBall = bodies[middleBallIndex];
+            middleBall.x = mouseX;
+            middleBall.y = mouseY;
+
+            middleBall.vx = 0;
+            middleBall.vy = 0;
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false; 
+    });
+
+    function update(dt) {
+        const forces = bodies.map(() => ({ fx: 0, fy: 0 }));
+
+        for (let i = 0; i < bodies.length; i++) {
+            if (isDragging && i === middleBallIndex) continue; 
+
+            for (let j = i + 1; j < bodies.length; j++) {
+                const { fx, fy } = calculateForce(bodies[i], bodies[j]);
+                forces[i].fx += fx;
+                forces[i].fy += fy;
+                forces[j].fx -= fx;
+                forces[j].fy -= fy;
+            }
+        }
+
+        for (let i = 0; i < bodies.length; i++) {
+            if (isDragging && i === middleBallIndex) continue; 
+
+            bodies[i].applyForce(forces[i].fx, forces[i].fy, dt);
+            bodies[i].updatePosition(dt);
+
+            if (bodies[i].x <= 0 || bodies[i].x >= canvas.width) {
+                bodies[i].vx *= -1; 
+            }
+            if (bodies[i].y <= 0 || bodies[i].y >= canvas.height) {
+                bodies[i].vy *= -1; 
+            }
+        }
+    }
+
+    function draw() {
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        bodies.forEach(body => {
+            ctx.beginPath();
+            ctx.arc(body.x, body.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.closePath();
+        });
+    }
+
+    function loop() {
+        update(0.4); 
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+    </script>
+</body>
+</html>
