@@ -131,7 +131,7 @@
 
         function loadQuestions() {
             //load JSON
-            fetch('questions.json')
+            fetch('questions.JSON')
                 .then(response => response.json())
                 .then(jsonData => {
                     questions = jsonData.filter(q =>
