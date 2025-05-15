@@ -1,5 +1,7 @@
 # html-games
 https://ilbbbm2.github.io/html-games/game_of_life.html
+## would you rather game for the ages!!!!!
+https://ilbbbm2.github.io/html-games/would_you_rather.html
 
 
 
