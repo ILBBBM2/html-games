@@ -131,7 +131,8 @@
 
         function loadQuestions() {
             //load JSON
-            fetch('questions.JSON')
+            //why does this keep breaking why is github pages like this
+            fetch('questions.json')
                 .then(response => response.json())
                 .then(jsonData => {
                     questions = jsonData.filter(q =>
