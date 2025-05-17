@@ -3,7 +3,7 @@ https://ilbbbm2.github.io/html-games/game_of_life.html
 ## would you rather game for the ages!!!!!
 https://ilbbbm2.github.io/html-games/would_you_rather.html
 
-##a 1v1 game
+## a 1v1 game
 https://ilbbbm2.github.io/html-games/web/1v1.html
 controls: player 1: wasd-movement
                     space-shoot
