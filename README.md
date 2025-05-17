@@ -7,7 +7,7 @@ https://ilbbbm2.github.io/html-games/would_you_rather.html
 https://ilbbbm2.github.io/html-games/web/1v1.html
 controls: player 1: wasd-movement
                     space-shoot
-                    L.cntrl-reload
+                    q-reload
           player 2: ijkl-movement
                     c-shoot
                     v-reload
