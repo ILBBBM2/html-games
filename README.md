@@ -13,16 +13,13 @@ controls: player 1: wasd-movement
                     v-reload
 
 
-##multibody problem, a gravity simulation
+## multibody problem, a gravity simulation
 https://ilbbbm2.github.io/html-games/multi_body_problem.html
 
 demo when too many balls, get added (im assuming the gravtational pull of the minor balls add up to form one large gravatational mass, similar to a planet:
 
-
-
-
 https://github.com/user-attachments/assets/60644000-049d-4027-bedd-87c52bf7c9d1
 
 
-
+## a maze solver that uses BFS
 https://ilbbbm2.github.io/html-games/maze_solver.html
