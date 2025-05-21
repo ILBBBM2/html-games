@@ -5,12 +5,24 @@ https://ilbbbm2.github.io/html-games/would_you_rather.html
 
 ## a 1v1 game
 https://ilbbbm2.github.io/html-games/web/1v1.html
-controls: player 1: wasd-movement
+
+
+controls for player 1
+
+                    wasd-movement
+                    
                     space-shoot
-                    q-reload
-          player 2: ijkl-movement
-                    c-shoot
-                    v-reload
+                    
+                    q-reload        
+                    
+          
+player 2 
+                    
+                    ijkl-movement
+                    
+                    b-shoot
+                    
+                    n-reload
 
 
 ## multibody problem, a gravity simulation
