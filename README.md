@@ -1,5 +1,12 @@
 # html-games
 https://ilbbbm2.github.io/html-games/game_of_life.html
+
+# doom on MS-DOS
+https://ilbbbm2.github.io/doom/
+
+visit [here](https://github.com/ilbbbm2/doom) for the breakdown on how i did it
+
+
 ## would you rather game for the ages!!!!!
 https://ilbbbm2.github.io/html-games/would_you_rather.html
 
